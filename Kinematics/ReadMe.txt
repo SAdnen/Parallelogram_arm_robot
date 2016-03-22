@@ -1,0 +1,1 @@
+In this files we established the kinematic model of the arm and then resolute the equation systems to find the relation between the angles (theta1, theta2, theta3) and the position of the extrimity of the arm (x,y,z)
