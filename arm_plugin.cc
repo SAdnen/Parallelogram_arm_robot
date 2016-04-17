@@ -49,10 +49,12 @@ namespace gazebo
 			// Get the first joint. We are making an assumption about the model
 			// having 3 joints that are the rotational joints.
 			this->jointDD1 = _model->GetJoints()[6];
-			//this->jointDD2 = _model->GetJoints()[9];
-			//this->joint12 = _model->GetJoints()[1];
+			this->jointDD2 = _model->GetJoints()[9];
+			this->joint12 = _model->GetJoints()[1];
 			//std::cerr <<"This is the joint ["<<this->model->GetName() << "]\n";
 			std::cerr <<"This is the joint ["<< this->jointDD1->GetName() << "]\n";
+			std::cerr <<"This is the joint ["<< this->jointDD2->GetName() << "]\n";
+			std::cerr <<"This is the joint ["<< this->joint12->GetName() << "]\n";
 			//Setup a P-controller, with a gain of 0.1
 			this->pid = common::PID(0.1,0.0,0.0);
 			// Apply the P-controller to the joint
@@ -63,14 +65,14 @@ namespace gazebo
 			//this->model->GetJointController()->SetVelocityTarget( this->jointDD1->GetScopedName(), velocity);
 			//std::cerr <<"This is the joint ["<< this->jointDD2->GetName() << "]\n";
 			// Apply the P-controller to the joint
-			//this->model->GetJointController()->SetVelocityPID( this->jointDD2->GetScopedName(), this->pid);
+			this->model->GetJointController()->SetVelocityPID( this->jointDD2->GetScopedName(), this->pid);
 			
 			// Set the joint's target velocity. This target velocity is just
 			// for demonstration purposes.
 			//this->model->GetJointController()->SetVelocityTarget( this->jointDD2->GetScopedName(), velocity12);
 			//std::cerr <<"This is the joint ["<< this->joint12->GetName() << "]\n";
 			// Apply the P-controller to the joint
-			//this->model->GetJointController()->SetVelocityPID( this->joint12->GetScopedName(), this->pid);
+			this->model->GetJointController()->SetVelocityPID( this->joint12->GetScopedName(), this->pid);
 			
 			// Set the joint's target velocity. This target velocity is just
 			// for demonstration purposes.
@@ -116,16 +118,16 @@ namespace gazebo
 		// Create our ROS node. This acts in a similar manner to
 		// the Gazebo node
 		this->rosNodeDD1.reset(new ros::NodeHandle("gazebo_client"));
-		/*												
+														
 		this->rosNodeDD2.reset(new ros::NodeHandle("gazebo_clientDD2"));	
 		this->rosNode12.reset(new ros::NodeHandle("gazebo_client12"));	
-		*/
+		
 // Create a named topic, and subscribe to it.
 		ros::SubscribeOptions soDD1 = ros::SubscribeOptions::create<std_msgs::Float32>(
 				"/" + this->model->GetName() + "/arm_cmdDD1", 1,
 				boost::bind(&ArmPlugin::OnRosMsgDD1, this, _1),
 				ros::VoidPtr(), &this->rosQueueDD1);
-		/*
+		
 		ros::SubscribeOptions soDD2 =
 		  ros::SubscribeOptions::create<std_msgs::Float32>(
 				"/" + this->model->GetName() + "/arm_cmdDD2",
@@ -138,22 +140,20 @@ namespace gazebo
 				1,
 				boost::bind(&ArmPlugin::OnRosMsg12, this, _1),
 				ros::VoidPtr(), &this->rosQueue12);
-		*/		
+				
 		this->rosSubDD1 = this->rosNodeDD1->subscribe(soDD1);				
-		/*
+		
 		this->rosSubDD2 = this->rosNodeDD2->subscribe(soDD2);
 		this->rosSub12 = this->rosNode12->subscribe(so12);
-		*/
+		
 		// Spin up the queue helper thread.
 		this->rosQueueThreadDD1 = std::thread(std::bind(&ArmPlugin::QueueThreadDD1, this));
-		/*
-		this->rosQueueThreadDD2 =
-		  std::thread(std::bind(&ArmPlugin::QueueThreadDD2, this));
+		
+		this->rosQueueThreadDD2 = std::thread(std::bind(&ArmPlugin::QueueThreadDD2, this));
 		  
-		this->rosQueueThread12 =
-		  std::thread(std::bind(&ArmPlugin::QueueThread12, this));
+		this->rosQueueThread12 = std::thread(std::bind(&ArmPlugin::QueueThread12, this));
 		  
-		  */
+		  
 		      
 		}
 		
@@ -166,7 +166,7 @@ namespace gazebo
 		  this->model->GetJointController()->SetVelocityTarget(
 				this->jointDD1->GetScopedName(), _vel);
 		}
-		/*
+		
 		public: void SetVelocityDD2(const double &_vel)
 		{
 		  // Set the joint's target velocity.
@@ -179,7 +179,7 @@ namespace gazebo
 		  this->model->GetJointController()->SetVelocityTarget(
 				this->joint12->GetScopedName(), _vel);
 		}	
-		*/			
+					
 		private: common::PID pid;
 		private: physics::JointPtr jointDD1, jointDD2, joint12;
 		private: physics::ModelPtr model;
@@ -191,7 +191,7 @@ namespace gazebo
 		
 		///////////////////////ROS////////////////////////////////
 		/// \brief A node use for ROS transport
-		private: std::unique_ptr<ros::NodeHandle> rosNodeDD1;
+		private: std::unique_ptr<ros::NodeHandle> rosNodeDD1, rosNodeDD2, rosNode12;
 
 		/// \brief A ROS subscriber
 		private: ros::Subscriber rosSubDD1, rosSubDD2, rosSub12;
@@ -200,18 +200,18 @@ namespace gazebo
 		private: ros::CallbackQueue rosQueueDD1, rosQueueDD2, rosQueue12;
 
 		/// \brief A thread the keeps running the rosQueue
-		private: std::thread rosQueueThreadDD1; /*, rosQueueThreadDD2, rosQueueThread12;*/
+		private: std::thread rosQueueThreadDD1,  rosQueueThreadDD2, rosQueueThread12;
 		
 		
 		/// \brief Handle incoming message
 		/// \param[in] _msg Repurpose a vector3 message. This function will
 		/// only use the x component.
-		/*private: void OnMsgDD1(ConstVector3dPtr &_msg)
+		private: void OnMsgDD1(ConstVector3dPtr &_msg)
 		{
 		  this->SetVelocityDD1(_msg->x());
 		}
-		*/
-		/*
+		
+		
 		private: void OnMsgDD2(ConstVector3dPtr &_msg)
 		{
 		  this->SetVelocityDD2(_msg->x());
@@ -220,7 +220,7 @@ namespace gazebo
 		{
 		  this->SetVelocity12(_msg->x());
 		}
-		*/
+		
 		/// \brief Handle an incoming message from ROS
 		/// \param[in] _msg A float value that is used to set the velocity
 		/// of the Velodyne.
@@ -238,7 +238,7 @@ namespace gazebo
 			 this->rosQueueDD1.callAvailable(ros::WallDuration(timeout));
 		  }
 		}
-		/*
+		
 		public: void OnRosMsgDD2(const std_msgs::Float32ConstPtr &_msg)
 		{
 		  this->SetVelocityDD2(_msg->data);
@@ -267,8 +267,7 @@ namespace gazebo
 		  {
 			 this->rosQueue12.callAvailable(ros::WallDuration(timeout));
 		  }
-		}
-		*/								
+		}								
 	};
 	// Tell Gazebo about this plugin, so that Gazebo cann call Load on this plugin.
 	GZ_REGISTER_MODEL_PLUGIN(ArmPlugin)
