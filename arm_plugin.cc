@@ -16,9 +16,7 @@
 #include <stdio.h>
 #include <thread>
 #include <boost/function.hpp> 
-//#include <boost/thread.hpp>
-//#include <gazebo/physics/Joint.hh>
-//#include <gazebo/physics/JointWrench.hh>
+
 namespace gazebo
 {
 	/// \brief A plugin to control robot joints
