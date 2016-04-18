@@ -1,1 +1,0 @@
-/usr/bin/c++  -fPIC   -O3 -DNDEBUG   -shared -Wl,-soname,libarm_plugin.so -o libarm_plugin.so CMakeFiles/arm_plugin.dir/arm_plugin.cc.o  -L/usr/lib/x86_64-linux-gnu/gazebo-2.2/plugins 
